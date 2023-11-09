@@ -22,7 +22,6 @@
         }
 
         p,
-
         label,
         input,
         button {
@@ -96,7 +95,7 @@
                 resultLabel.textContent = "ElapsedTime:";
             }
             setDefaultElapsedTime(distance.value);
-            calculatePace();
+
         });
         // Add event listener to the "time" input to calculate on Enter key press
         document.getElementById("time").addEventListener("keyup", function (event) {
@@ -115,11 +114,11 @@
                     timeInput.value = "01:30";
 
                 } else if (selectedDistance === "10") {
-                    timeInput.value = "00:30";
+                    timeInput.value = "00:40";
                 } else if (selectedDistance === "5") {
                     timeInput.value = "00:20";
                 } else {
-                    timeInput.value = "00:40";
+                    timeInput.value = "00:30";
                 }
             }
             else if (attribute == "PaceInKm") {
@@ -132,6 +131,7 @@
                 timeInput.value = "08:00";
 
             }
+            calculatePace();
         }
 
         function calculatePace() {
