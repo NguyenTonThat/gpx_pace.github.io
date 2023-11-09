@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Change GPX Pace</title>
+  <style>
+    .form-group {
+      display: flex;
+      align-items: center;
+    }
+
+    .form-group label {
+      /* margin-right: 20px; */
+      width: 100px;
+    }
+    .divider {
+      border: 1px solid #000;
+      height: 2px;
+      width: 100%;
+      margin-bottom: 10px;
+      margin-top: 5px;
+    }
+    #minPaceInput,#maxPaceInput{
+        width: 30px;
+      
+    }
+
+    .error-message {
+      color: red;
+      display: none; /* Initially hide the error message */
+    }
+  </style>
+</head>
+<body>
+  <h1>Hack GPX</h1>
+  
+  <input type="file"  id="gpxFileInput">
+  <div style="padding: 4px;"></div>
+  <div class="form-group">
+    <label for="minPaceInput">MinPace: </label>
+    <input type="number"  id="minPaceInput" min="1" step="0.1" value="7" >
+    <label for="maxPaceInput" style="padding-left:10px;width: 80px;" >MaxPace: </label>
+    <input type="number" id="maxPaceInput" min="1" step="0.1" value="10">
+  </div>
+  <div style="padding: 4px;"></div>
+  
+  <div class="form-group">
+    <label for="startTimeInput">Start Time: </label>
+    <input type="datetime-local" id="startTimeInput" value="">
+  </div>
+  <div style="padding: 2px;"></div>
+    <!-- Error message div -->
+    <div class="error-message" id="errorMessage">Please choose a GPX file.</div>
+  </div>
+  <div class="divider"></div>
+  <button onclick="changePace()">Change Pace</button>
+  <button onclick="download()">Download</button>
+  <script>
+    const LocalTimeOffset = 7*60*60*1000;//UTC+7 in milisecond 
+    let  parsedGPX=null
+        // Function to display the error message
+        function displayMessage(message,color='red') {
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.textContent = message;
+      errorMessage.style.color=color;
+      errorMessage.style.display = "block";
+    }
+        // Function to hide the error message
+        function hideErrorMessage() {
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.style.display = "none";
+    }
+        // Function to set the default value of the start time input to the current time
+        function setDefaultStartTime() {
+      const startTimeInput = document.getElementById("startTimeInput");
+      const now = new Date();
+      const localTime = new Date(now.getTime() + LocalTimeOffset);
+      const formattedTime = localTime.toISOString().slice(0, 16); // Remove seconds and milliseconds
+      startTimeInput.value = formattedTime;
+    }
+    hideErrorMessage();
+    // Call the function to set the default start time when the page loads
+    setDefaultStartTime();
+    function parseGPX(gpxText) {
+      // Implement GPX parsing logic (you may need a library)
+      // This is a simplified example; use a GPX parsing library for accuracy
+      // Return the parsed GPX data as a DOM object
+      const parser = new DOMParser();
+      const gpxDoc = parser.parseFromString(gpxText, "application/xml");
+      return gpxDoc;
+    }
+
+    function download() {
+        if(parsedGPX==null) {
+            displayMessage("No Modified GPX file to download!");
+            return;
+        }
+                  // Serialize the modified GPX data back to XML format
+                  const serializer = new XMLSerializer();
+          const modifiedGPXText = serializer.serializeToString(parsedGPX);
+
+        //   Create a Blob and download the modified GPX file
+          const blob = new Blob([modifiedGPXText], { type: "application/gpx+xml" });
+          const url = URL.createObjectURL(blob);
+
+          const downloadLink = document.createElement("a");
+          downloadLink.href = url;
+          downloadLink.download = "modified.gpx";
+          downloadLink.click();
+          displayMessage("The GPX file is downloaded!");
+    }
+    function changePace() {
+        parsedGPX=null;
+      const gpxFileInput = document.getElementById("gpxFileInput");
+      const file = gpxFileInput.files[0];
+      if (!file) {
+        displayMessage("Please choose a GPX file.");
+        return; // Exit the function early
+      }
+      // Hide the error message if a file is selected
+      hideErrorMessage();
+    //   const paceInput = document.getElementById("paceInput");
+      const minPaceInput = document.getElementById("minPaceInput");
+      const maxPaceInput = document.getElementById("maxPaceInput");
+      const minPace = parseFloat(minPaceInput.value);
+      const maxPace = parseFloat(maxPaceInput.value);
+    //   const newPace = parseFloat(paceInput.value);
+      // Generate a random pace between minPace and maxPace
+      
+      const startTimeInput = document.getElementById("startTimeInput");
+      const startTime = new Date(startTimeInput.value);
+
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const gpxText = e.target.result;
+
+          // Parse the GPX data into a DOM object
+           parsedGPX = parseGPX(gpxText);
+
+          // Modify the pace to the user-defined value
+        //   const newPace = Math.random() * (maxPace - minPace) + minPace;
+        const {totalTimeInSecond,totalDistanceInKm}  =modifyPace(parsedGPX, minPace,maxPace, startTime);
+        displayMessage(
+            "AvgPace:"+(totalTimeInSecond/60/totalDistanceInKm).toFixed(2)+
+            " Time:"+(totalTimeInSecond/60).toFixed(1)+"Min  "+
+            " Distance:"+totalDistanceInKm.toFixed(1)+"km " ,
+            "blue");
+
+        };
+
+        reader.readAsText(file);
+      }
+      
+    }
+
+    function modifyPace(parsedGPX, minPace, maxPace, startTime) {
+      // Calculate the time interval for the new pace (in seconds per kilometer)
+      const maxPaceInSeconds = minPace * 60;
+      const minPaceInSeconds = maxPace * 60;
+      let totalTimeInSecond = 0; 
+      let totalDistanceInKm = 0; 
+    //   const paceInSeconds = newPace * 60;
+      const paceInSeconds = Math.random() * (maxPaceInSeconds - minPaceInSeconds) + minPaceInSeconds;
+      const metadata = parsedGPX.querySelectorAll('metadata');
+      if(metadata){
+        metadata[0].querySelector('time').textContent = startTime.toISOString();
+      }
+      // Retrieve all track points in the GPX file
+      const trackPoints = parsedGPX.querySelectorAll('trkpt');
+      let previousTrackPoint = null;
+      for (let i = 0; i < trackPoints.length; i++) {
+        const trackPoint = trackPoints[i];
+
+        if (previousTrackPoint) {
+          // Calculate the distance between the current and previous track points using the Haversine formula
+          const distanceKilometers = calculateDistance(previousTrackPoint, trackPoint);
+
+          // Calculate the time interval based on the pace and distance
+          const timeIntervalSeconds = paceInSeconds * distanceKilometers;
+
+          // Update the time of the current track point
+        //   const currentTime = new Date(startTime);
+          const currentTime = new Date(previousTrackPoint.querySelector('time').textContent);
+          currentTime.setSeconds(currentTime.getSeconds() + timeIntervalSeconds);
+          trackPoint.querySelector('time').textContent = currentTime.toISOString();
+          totalTimeInSecond+=timeIntervalSeconds;
+          totalDistanceInKm+=distanceKilometers;
+        }
+        else{
+            trackPoint.querySelector('time').textContent = startTime.toISOString();
+        }
+        
+
+        previousTrackPoint = trackPoint;
+      }
+      return {totalTimeInSecond:totalTimeInSecond,totalDistanceInKm:totalDistanceInKm};
+    }
+
+    function calculateDistance(point1, point2) {
+      const lat1 = parseFloat(point1.getAttribute('lat'));
+      const lon1 = parseFloat(point1.getAttribute('lon'));
+      const lat2 = parseFloat(point2.getAttribute('lat'));
+      const lon2 = parseFloat(point2.getAttribute('lon'));
+
+      const R = 6371; // Earth's radius in kilometers
+      const dLat = (lat2 - lat1) * (Math.PI / 180);
+      const dLon = (lon2 - lon1) * (Math.PI / 180);
+
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c;
+
+      return distance;
+    }
+  </script>
+</body>
+</html>
