@@ -3,6 +3,7 @@
 
 <head>
   <title>Change GPX Pace</title>
+  <link rel="stylesheet" href="nouislider.min.css">
   <style>
     .form-group {
       display: flex;
@@ -34,7 +35,44 @@
       /* Initially hide the error message */
 
     }
+
+    /* Adjust the thickness of the slider */
+    #slider .noUi-base {
+      height: 5px;
+      /* Adjust the height as needed */
+    }
+
+    /* Use flexbox to display elements on the same row */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      /* Center items vertically */
+    }
+
+    .noUi-horizontal .noUi-handle {
+      width: 20px;
+      height: 15px;
+      right: -17px;
+      top: -5px
+    }
+
+    .noUi-horizontal {
+      height: 10px
+    }
+
+    .noUi-handle:after,
+    .noUi-handle:before {
+      content: "";
+      display: block;
+      position: absolute;
+      height: 10px;
+      width: 1px;
+      background: #E8E7E6;
+      left: 5px;
+      top: 0px
+    }
   </style>
+  <script src="nouislider.min.js"></script>
 </head>
 
 <body>
@@ -42,23 +80,35 @@
 
   <input type="file" id="gpxFileInput" onchange="handleFile()">
   <div style="padding: 4px;"></div>
-  <label id="sliderLabel">Select distance (1km-10.0km):</label>
 
-  <input type="range" id="distanceSlider" min="1" max="10" value="10" step="0.1" oninput="updateDistance()">
-  <label id="selectedDistance">(10.0km)</label>
+
+  <div class="slider-container">
+    <label id="sliderLabel">Distance </label>
+    <label style="padding: 0px ;">(</label>
+    <label id="startSliderVal"> 0.0 </label><label> km </label>
+    <label>-</label>
+    <label id="endSliderVal"> 10.0 </label> <label> km </label>
+    <label style="padding-right: 10px ;">)</label>
+    <div id="slider" style="width: 30%; padding-right: 20px;"></div>
+    <label id="selectedDistance">(10.0km)</label>
+  </div>
   <div style="padding: 4px;"></div>
-  <!-- <p id="selectedDistance">Selected Distance: 0 km</p> -->
+
   <div class="form-group">
     <label for="minPaceInput">MinPace: </label>
-    <input type="number" id="minPaceInput" min="1" step="0.1" value="7">
+    <input type="number" id="minPaceInput" min="1" step="0.2" value="7.2">
     <label for="maxPaceInput" style="padding-left:10px;width: 80px;">MaxPace: </label>
-    <input type="number" id="maxPaceInput" min="1" step="0.1" value="10">
+    <input type="number" id="maxPaceInput" min="1" step="0.2" value="9">
   </div>
   <div style="padding: 4px;"></div>
 
   <div class="form-group">
     <label for="startTimeInput">Start Time: </label>
     <input type="datetime-local" id="startTimeInput" value="">
+
+    <label style="padding-left: 15px; width: 70px;" for="endTimeInput">End Time: </label>
+    <input type="datetime-local" id="endTimeInput" value="" readonly>
+    <button style="margin-left: 5px;" onclick="moveTime()">MoveTime</button>
   </div>
   <div style="padding: 2px;"></div>
   <!-- Error message div -->
@@ -69,18 +119,30 @@
   <button onclick="download()">Download</button>
   <script>
 
+    document.addEventListener('DOMContentLoaded', function () {
+      // Initialize the slider
+      var slider = document.getElementById('slider');
+      var startInput = document.getElementById('startSliderVal');
+      var endInput = document.getElementById('endSliderVal');
 
-
-    function updateDistance() {
-      const distanceSlider = document.getElementById('distanceSlider');
+      noUiSlider.create(slider, {
+        start: [0, 10], // Initial values for start and end points
+        connect: true,
+        step: 0.1,  // Set the step to 0.1
+        range: {
+          'min': 0,
+          'max': 10
+        }
+      });
       const selectedDistanceElement = document.getElementById('selectedDistance');
-      var selectedDistance = parseFloat(distanceSlider.value).toFixed(1);
+      // Update input fields when slider values change
+      slider.noUiSlider.on('update', function (values) {
+        startInput.textContent = `${parseFloat(values[0]).toFixed(1)}`;
+        endInput.textContent = `${parseFloat(values[1]).toFixed(1)}`;
+        selectedDistanceElement.innerHTML = `(${(values[1] - values[0]).toFixed(1)}km)`;
+      });
+    });
 
-      selectedDistanceElement.innerHTML = `(${selectedDistance}km)`;
-
-      // Update the value of the slider itself
-      distanceSlider.value = selectedDistance;
-    }
 
 
     const LocalTimeOffset = 7 * 60 * 60 * 1000;//UTC+7 in milisecond 
@@ -100,7 +162,6 @@
         // Set up the onload event for the reader
         reader.onload = function (e) {
           // File has been loaded successfully
-          // displayMessage('Done');
           const gpxText = e.target.result;
           // Parse the GPX data into a DOM object
           const m_parsedGPX = parseGPX(gpxText);
@@ -122,16 +183,17 @@
           };
           totalDistanceInKm = totalDistanceInKm.toFixed(1);
           if (totalDistanceInKm > 1) {
-            const distanceSlider = document.getElementById('distanceSlider');
-            const sliderLabel = document.getElementById('sliderLabel');
-            const selectedDistanceElement = document.getElementById('selectedDistance');
-            distanceSlider.max = totalDistanceInKm;
-            distanceSlider.value = totalDistanceInKm;
-            sliderLabel.textContent = `Select distance (1km-${totalDistanceInKm}km)`;
-            selectedDistanceElement.innerHTML = `(${totalDistanceInKm}km)`;
-          }
 
-          displayMessage(`Distance:${(totalDistanceInKm)}km_______Time:${(totalTimeInSecond / 60).toFixed(1)}minutes`, 'blue');
+
+            const distanceSlider = document.getElementById('slider');
+            distanceSlider.noUiSlider.updateOptions({
+              range: {
+                'min': 0,
+                'max': parseFloat(totalDistanceInKm)
+              },
+              start: [0, parseFloat(totalDistanceInKm)]  // Set both start and end points to totalDistanceInKm
+            });
+          }
 
         };
 
@@ -148,6 +210,17 @@
       errorMessage.textContent = message;
       errorMessage.style.color = color;
       errorMessage.style.display = "block";
+    }
+    function moveTime() {
+      const startTimeInputElement = document.getElementById("startTimeInput");
+      const endTimeInputElement = document.getElementById("endTimeInput");
+      const endTimeStart = new Date(endTimeInputElement.value);
+      if (isNaN(endTimeStart)) {
+        displayMessage('End Time is invalid Date!');
+        return;
+      }
+      const endTime = new Date(endTimeStart.getTime()+LocalTimeOffset+60*1e3);
+      startTimeInputElement.value = endTime.toISOString().slice(0, 16); // Remove seconds and milliseconds;
     }
     // Function to hide the error message
     function hideErrorMessage() {
@@ -184,16 +257,18 @@
       //   Create a Blob and download the modified GPX file
       const blob = new Blob([modifiedGPXText], { type: "application/gpx+xml" });
       const url = URL.createObjectURL(blob);
-
+      const input = document.getElementById('gpxFileInput');
+      const fileName = input.files[0].name.replace(/\.[^/.]+$/, '');
       const downloadLink = document.createElement("a");
       downloadLink.href = url;
-      downloadLink.download = "modified.gpx";
+      downloadLink.download = `${fileName}_modified.gpx`;
       downloadLink.click();
 
     }
     function changePace() {
       parsedGPX = null;
       const gpxFileInput = document.getElementById("gpxFileInput");
+      const endTimeInputElement = document.getElementById("endTimeInput");
       const file = gpxFileInput.files[0];
       if (!file) {
         displayMessage("Please choose a GPX file.");
@@ -220,13 +295,19 @@
           parsedGPX = parseGPX(gpxText);
 
           // Modify the pace to the user-defined value
-          //   const newPace = Math.random() * (maxPace - minPace) + minPace;
+
           const { totalTimeInSecond, totalDistanceInKm } = modifyPace(parsedGPX, minPace, maxPace, startTime);
           displayMessage(
             "AvgPace:" + (totalTimeInSecond / 60 / totalDistanceInKm).toFixed(2) +
-            "__________Time:" + (totalTimeInSecond / 60).toFixed(1) + "Min  " +
-            " Distance:" + totalDistanceInKm.toFixed(1) + "km ",
+            "_____Time:" + (totalTimeInSecond / 60).toFixed(1) + "Min  " +
+            " ____Distance:" + totalDistanceInKm.toFixed(1) + "km ",
             "blue");
+
+          const endTime = new Date(startTime.getTime() + totalTimeInSecond * 1e3 + LocalTimeOffset);
+
+          const formattedDate = endTime.toISOString().slice(0, 16);
+          // Set the value of the input field
+          document.getElementById("endTimeInput").value = formattedDate;
 
         };
 
@@ -239,20 +320,19 @@
     // Function to generate a second random pace based on the first one
     function generateSecondRandomPace(maxPaceInSeconds, minPaceInSeconds, firstRandomPace = 0) {
       if (firstRandomPace == 0) return Math.random() * (maxPaceInSeconds - minPaceInSeconds) + minPaceInSeconds;
-      const randomFactor = (Math.random() * 6) - 3; // Random value in the range [-3, 3]
-      const randomizedPace = Math.round(firstRandomPace + randomFactor);
-
-      return Math.max(minPaceInSeconds, Math.min(maxPaceInSeconds, randomizedPace));
+      return Math.random() * (maxPaceInSeconds - 0.2) + 0.2;
     }
     function modifyPace(parsedGPX, minPace, maxPace, startTime) {
       // Calculate the time interval for the new pace (in seconds per kilometer)
       const maxPaceInSeconds = minPace * 60;
       const minPaceInSeconds = maxPace * 60;
       let totalTimeInSecond = 0;
+      let countDistanceInKm = 0;
       let totalDistanceInKm = 0;
-      const distanceSlider = document.getElementById('distanceSlider');
-      const maxDistanceVal = parseFloat(distanceSlider.value).toFixed(1) - 0.01;
-      //   const paceInSeconds = newPace * 60;
+
+      const startSliderValElement = document.getElementById('startSliderVal');
+      const endSliderValElement = document.getElementById('endSliderVal');
+
       const gpxElement = parsedGPX.querySelector('gpx');
       gpxElement.setAttribute('creator', 'iPhone12');
       const metadata = parsedGPX.querySelectorAll('metadata');
@@ -275,13 +355,13 @@
           const timeIntervalSeconds = paceInSeconds * distanceKilometers;
 
           // Update the time of the current track point
-          //   const currentTime = new Date(startTime);
           const currentTime = new Date(previousTrackPoint.querySelector('time').textContent);
           currentTime.setTime(currentTime.getTime() + timeIntervalSeconds * 1e3)
           trackPoint.querySelector('time').textContent = currentTime.toISOString();
-          totalTimeInSecond += timeIntervalSeconds;
-          totalDistanceInKm += distanceKilometers;
-          if (totalDistanceInKm > maxDistanceVal) {
+
+          countDistanceInKm += distanceKilometers;
+
+          if (countDistanceInKm > parseFloat(endSliderValElement.textContent)) {
             // Remove elements from the specified index to the end
             for (let rmIdx = i; rmIdx < trackPoints.length; rmIdx++) {
               let trackPoint = trackPoints[rmIdx];
@@ -289,6 +369,15 @@
             }
             break;
           }
+          else if (countDistanceInKm < parseFloat(startSliderValElement.textContent)) {
+            previousTrackPoint.parentNode.removeChild(previousTrackPoint);
+
+          }
+          else {
+            totalTimeInSecond += timeIntervalSeconds;
+            totalDistanceInKm += distanceKilometers;
+          }
+
         }
         else {
           trackPoint.querySelector('time').textContent = startTime.toISOString();
