@@ -74,13 +74,20 @@
     </div>
 
 
-    <div class="divider"></div>
-    <button onclick="calculatePace()">Calculate</button>
+    <!-- <div class="divider"></div>
+    <button onclick="calculatePace()">Calculate</button> -->
 
     <script>
         setDefaultElapsedTime(document.getElementById("distance").value);
         calculatePace();
         // Set default time for Full Marathon
+        const timeInput = document.getElementById('time');
+
+        // Add an event listener for the 'change' event
+        timeInput.addEventListener('change', function () {
+            // Call the calculatePace function when the value changes
+            calculatePace();
+        });
         document.getElementById("distance").addEventListener("change", function () {
             setDefaultElapsedTime(this.value);
         });
