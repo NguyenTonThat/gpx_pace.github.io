@@ -31,7 +31,7 @@
 
     .error-message {
       color: red;
-      display: none;
+
       /* Initially hide the error message */
 
     }
@@ -105,10 +105,10 @@
   <div class="form-group">
     <label for="startTimeInput">Start Time: </label>
     <input type="datetime-local" id="startTimeInput" value="">
+    <button style="margin-left: 5px;" onclick="moveTime()">⬅️MoveTime</button>
 
     <label style="padding-left: 15px; width: 70px;" for="endTimeInput">End Time: </label>
     <input type="datetime-local" id="endTimeInput" value="" readonly>
-    <button style="margin-left: 5px;" onclick="moveTime()">MoveTime</button>
   </div>
   <div style="padding: 2px;"></div>
   <!-- Error message div -->
@@ -118,6 +118,10 @@
   <button onclick="changePace()">Change Pace</button>
   <button onclick="download()">Download</button>
   <script>
+
+    document.getElementById('minPaceInput').addEventListener('change', changePace);
+    document.getElementById('maxPaceInput').addEventListener('change', changePace);
+    document.getElementById('startTimeInput').addEventListener('change', changePace);
 
     document.addEventListener('DOMContentLoaded', function () {
       // Initialize the slider
@@ -140,6 +144,7 @@
         startInput.textContent = `${parseFloat(values[0]).toFixed(1)}`;
         endInput.textContent = `${parseFloat(values[1]).toFixed(1)}`;
         selectedDistanceElement.innerHTML = `(${(values[1] - values[0]).toFixed(1)}km)`;
+        changePace();
       });
     });
 
@@ -147,7 +152,7 @@
 
     const LocalTimeOffset = 7 * 60 * 60 * 1000;//UTC+7 in milisecond 
     let parsedGPX = null
-    hideErrorMessage();
+
     // Call the function to set the default start time when the page loads
     setDefaultStartTime();
     function handleFile() {
@@ -219,14 +224,10 @@
         displayMessage('End Time is invalid Date!');
         return;
       }
-      const endTime = new Date(endTimeStart.getTime()+LocalTimeOffset+60*1e3);
+      const endTime = new Date(endTimeStart.getTime() + LocalTimeOffset + 60 * 1e3);
       startTimeInputElement.value = endTime.toISOString().slice(0, 16); // Remove seconds and milliseconds;
     }
-    // Function to hide the error message
-    function hideErrorMessage() {
-      const errorMessage = document.getElementById("errorMessage");
-      errorMessage.style.display = "none";
-    }
+
     // Function to set the default value of the start time input to the current time
     function setDefaultStartTime() {
       const startTimeInput = document.getElementById("startTimeInput");
@@ -274,8 +275,7 @@
         displayMessage("Please choose a GPX file.");
         return; // Exit the function early
       }
-      // Hide the error message if a file is selected
-      hideErrorMessage();
+
       //   const paceInput = document.getElementById("paceInput");
       const minPaceInput = document.getElementById("minPaceInput");
       const maxPaceInput = document.getElementById("maxPaceInput");
