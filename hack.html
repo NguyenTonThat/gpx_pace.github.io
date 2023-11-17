@@ -29,6 +29,12 @@
 
     }
 
+    #mapCanvas {
+      margin-top: 20px;
+      /* border: 1px solid #000; */
+      border: none;
+    }
+
     .error-message {
       color: red;
 
@@ -117,6 +123,9 @@
   <div class="divider"></div>
   <button onclick="changePace()">Change Pace</button>
   <button onclick="download()">Download</button>
+  <div>
+    <canvas id="mapCanvas"></canvas>
+  </div>
   <script>
 
     document.getElementById('minPaceInput').addEventListener('change', changePace);
@@ -144,14 +153,14 @@
         startInput.textContent = `${parseFloat(values[0]).toFixed(1)}`;
         endInput.textContent = `${parseFloat(values[1]).toFixed(1)}`;
         selectedDistanceElement.innerHTML = `(${(values[1] - values[0]).toFixed(1)}km)`;
-        changePace();
+        changePace(updateCanvas = 1);
       });
     });
 
 
 
     const LocalTimeOffset = 7 * 60 * 60 * 1000;//UTC+7 in milisecond 
-    let parsedGPX = null
+    let modifiedParsedGPX = null
 
     // Call the function to set the default start time when the page loads
     setDefaultStartTime();
@@ -169,8 +178,11 @@
           // File has been loaded successfully
           const gpxText = e.target.result;
           // Parse the GPX data into a DOM object
-          const m_parsedGPX = parseGPX(gpxText);
-          const trackPoints = m_parsedGPX.querySelectorAll('trkpt');
+          const originalParsedGPX = parseGPX(gpxText);
+          const trackPoints = originalParsedGPX.querySelectorAll('trkpt');
+          // Drawing Canvas
+          drawRoute(trackPoints);
+
           let totalDistanceInKm = 0;
           let totalTimeInSecond = 0;
           let previousTrackPoint = null;
@@ -247,13 +259,13 @@
     }
 
     function download() {
-      if (parsedGPX == null) {
+      if (modifiedParsedGPX == null) {
         displayMessage("No Modified GPX file to download!", "blue");
         return;
       }
       // Serialize the modified GPX data back to XML format
       const serializer = new XMLSerializer();
-      const modifiedGPXText = serializer.serializeToString(parsedGPX);
+      const modifiedGPXText = serializer.serializeToString(modifiedParsedGPX);
 
       //   Create a Blob and download the modified GPX file
       const blob = new Blob([modifiedGPXText], { type: "application/gpx+xml" });
@@ -266,8 +278,8 @@
       downloadLink.click();
 
     }
-    function changePace() {
-      parsedGPX = null;
+    function changePace(updateCanvas = 0) {
+      modifiedParsedGPX = null;
       const gpxFileInput = document.getElementById("gpxFileInput");
       const endTimeInputElement = document.getElementById("endTimeInput");
       const file = gpxFileInput.files[0];
@@ -275,8 +287,6 @@
         displayMessage("Please choose a GPX file.");
         return; // Exit the function early
       }
-
-      //   const paceInput = document.getElementById("paceInput");
       const minPaceInput = document.getElementById("minPaceInput");
       const maxPaceInput = document.getElementById("maxPaceInput");
       const minPace = parseFloat(minPaceInput.value);
@@ -287,16 +297,17 @@
 
       if (file) {
         const reader = new FileReader();
-
         reader.onload = function (e) {
           const gpxText = e.target.result;
-
           // Parse the GPX data into a DOM object
-          parsedGPX = parseGPX(gpxText);
-
+          modifiedParsedGPX = parseGPX(gpxText);
           // Modify the pace to the user-defined value
-
-          const { totalTimeInSecond, totalDistanceInKm } = modifyPace(parsedGPX, minPace, maxPace, startTime);
+          const { totalTimeInSecond, totalDistanceInKm } = modifyPace(modifiedParsedGPX, minPace, maxPace, startTime);
+          // Drawing Canvas
+          if (updateCanvas == 1) {
+            const modifiedTrackPoints = modifiedParsedGPX.querySelectorAll('trkpt');
+            drawRoute(trkpts = modifiedTrackPoints, fitCanvas = 0);
+          }
           displayMessage(
             "AvgPace:" + (totalTimeInSecond / 60 / totalDistanceInKm).toFixed(2) +
             "_____Time:" + (totalTimeInSecond / 60).toFixed(1) + "Min  " +
@@ -304,7 +315,6 @@
             "blue");
 
           const endTime = new Date(startTime.getTime() + totalTimeInSecond * 1e3 + LocalTimeOffset);
-
           const formattedDate = endTime.toISOString().slice(0, 16);
           // Set the value of the input field
           document.getElementById("endTimeInput").value = formattedDate;
@@ -347,18 +357,14 @@
         let paceInSeconds = 0;
         if (previousTrackPoint) {
           paceInSeconds = generateSecondRandomPace(maxPaceInSeconds, minPaceInSeconds, paceInSeconds);
-
           // Calculate the distance between the current and previous track points using the Haversine formula
           const distanceKilometers = calculateDistance(previousTrackPoint, trackPoint);
-
           // Calculate the time interval based on the pace and distance
           const timeIntervalSeconds = paceInSeconds * distanceKilometers;
-
           // Update the time of the current track point
           const currentTime = new Date(previousTrackPoint.querySelector('time').textContent);
           currentTime.setTime(currentTime.getTime() + timeIntervalSeconds * 1e3)
           trackPoint.querySelector('time').textContent = currentTime.toISOString();
-
           countDistanceInKm += distanceKilometers;
 
           if (countDistanceInKm > parseFloat(endSliderValElement.textContent)) {
@@ -408,6 +414,72 @@
 
       return distance;
     }
+
+    //Draw the canvas
+    // Find the min and max latitudes and longitudes
+    let minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
+    function drawRoute(trkpts, fitCanvas = 1) {
+      const canvas = document.getElementById("mapCanvas");
+      const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      
+      if (fitCanvas == 1) {
+      for (let i = 0; i < trkpts.length; i++) {
+        const lat = parseFloat(trkpts[i].getAttribute("lat"));
+        const lon = parseFloat(trkpts[i].getAttribute("lon"));
+
+        minLat = Math.min(minLat, lat);
+        maxLat = Math.max(maxLat, lat);
+        minLon = Math.min(minLon, lon);
+        maxLon = Math.max(maxLon, lon);
+      }
+    }
+
+      // Calculate the aspect ratio of the route
+      const routeAspectRatio = (maxLon - minLon) / (maxLat - minLat);
+
+      // Set the canvas dimensions based on the aspect ratio
+      if (fitCanvas == 1) {
+        const canvasWidth = 400;
+        const canvasHeight = canvasWidth / routeAspectRatio;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+      }
+
+      // Calculate the scaling factors
+      const latScale = canvas.height / (maxLat - minLat);
+      const lonScale = canvas.width / (maxLon - minLon);
+
+      // Function to convert lat/lon to canvas coordinates
+      function latLonToXY(lat, lon) {
+        const x = (lon - minLon) * lonScale;
+        const y = canvas.height - ((lat - minLat) * latScale); // Invert y-axis to match typical Cartesian coordinates
+        return { x, y };
+      }
+
+      // Draw route on canvas
+      ctx.beginPath();
+      ctx.strokeStyle = 'red'; // Set the stroke color to blue
+
+      for (let i = 0; i < trkpts.length; i++) {
+        const lat = parseFloat(trkpts[i].getAttribute("lat"));
+        const lon = parseFloat(trkpts[i].getAttribute("lon"));
+
+        const { x, y } = latLonToXY(lat, lon);
+        if (i %1000==0) {
+          const test=1;
+        }
+        if (i === 0) {
+          if (fitCanvas == 1) ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+    }
+
   </script>
 </body>
 
