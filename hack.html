@@ -458,6 +458,7 @@
       // Draw route on canvas
       ctx.beginPath();
       ctx.strokeStyle = 'red'; // Set the stroke color to blue
+      ctx.lineWidth = 2;
 
       for (let i = 0; i < trkpts.length; i++) {
         const lat = parseFloat(trkpts[i].getAttribute("lat"));
