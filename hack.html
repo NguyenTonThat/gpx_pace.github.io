@@ -424,18 +424,18 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      
-      if (fitCanvas == 1) {
-      for (let i = 0; i < trkpts.length; i++) {
-        const lat = parseFloat(trkpts[i].getAttribute("lat"));
-        const lon = parseFloat(trkpts[i].getAttribute("lon"));
 
-        minLat = Math.min(minLat, lat);
-        maxLat = Math.max(maxLat, lat);
-        minLon = Math.min(minLon, lon);
-        maxLon = Math.max(maxLon, lon);
+      if (fitCanvas == 1) {
+        for (let i = 0; i < trkpts.length; i++) {
+          const lat = parseFloat(trkpts[i].getAttribute("lat"));
+          const lon = parseFloat(trkpts[i].getAttribute("lon"));
+
+          minLat = Math.min(minLat, lat);
+          maxLat = Math.max(maxLat, lat);
+          minLon = Math.min(minLon, lon);
+          maxLon = Math.max(maxLon, lon);
+        }
       }
-    }
 
       // Calculate the aspect ratio of the route
       const routeAspectRatio = (maxLon - minLon) / (maxLat - minLat);
@@ -468,9 +468,6 @@
         const lon = parseFloat(trkpts[i].getAttribute("lon"));
 
         const { x, y } = latLonToXY(lat, lon);
-        if (i %1000==0) {
-          const test=1;
-        }
         if (i === 0) {
           if (fitCanvas == 1) ctx.moveTo(x, y);
         } else {
