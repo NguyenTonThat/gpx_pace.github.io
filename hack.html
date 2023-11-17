@@ -161,7 +161,7 @@
 
     const LocalTimeOffset = 7 * 60 * 60 * 1000;//UTC+7 in milisecond 
     let modifiedParsedGPX = null
-
+    let originalParsedGPX = null;
     // Call the function to set the default start time when the page loads
     setDefaultStartTime();
     function handleFile() {
@@ -178,7 +178,7 @@
           // File has been loaded successfully
           const gpxText = e.target.result;
           // Parse the GPX data into a DOM object
-          const originalParsedGPX = parseGPX(gpxText);
+          originalParsedGPX = parseGPX(gpxText);
           const trackPoints = originalParsedGPX.querySelectorAll('trkpt');
           // Drawing Canvas
           drawRoute(trackPoints);
@@ -280,10 +280,7 @@
     }
     function changePace(updateCanvas = 0) {
       modifiedParsedGPX = null;
-      const gpxFileInput = document.getElementById("gpxFileInput");
-      const endTimeInputElement = document.getElementById("endTimeInput");
-      const file = gpxFileInput.files[0];
-      if (!file) {
+      if (originalParsedGPX == null) {
         displayMessage("Please choose a GPX file.");
         return; // Exit the function early
       }
@@ -295,34 +292,33 @@
       const startTimeInput = document.getElementById("startTimeInput");
       const startTime = new Date(startTimeInput.value);
 
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const gpxText = e.target.result;
-          // Parse the GPX data into a DOM object
-          modifiedParsedGPX = parseGPX(gpxText);
-          // Modify the pace to the user-defined value
-          const { totalTimeInSecond, totalDistanceInKm } = modifyPace(modifiedParsedGPX, minPace, maxPace, startTime);
-          // Drawing Canvas
-          if (updateCanvas == 1) {
-            const modifiedTrackPoints = modifiedParsedGPX.querySelectorAll('trkpt');
-            drawRoute(trkpts = modifiedTrackPoints, fitCanvas = 0);
-          }
-          displayMessage(
-            "AvgPace:" + (totalTimeInSecond / 60 / totalDistanceInKm).toFixed(2) +
-            "_____Time:" + (totalTimeInSecond / 60).toFixed(1) + "Min  " +
-            " ____Distance:" + totalDistanceInKm.toFixed(1) + "km ",
-            "blue");
-
-          const endTime = new Date(startTime.getTime() + totalTimeInSecond * 1e3 + LocalTimeOffset);
-          const formattedDate = endTime.toISOString().slice(0, 16);
-          // Set the value of the input field
-          document.getElementById("endTimeInput").value = formattedDate;
-
-        };
-
-        reader.readAsText(file);
+      modifiedParsedGPX = document.implementation.createDocument(null, null, null);
+      // Clone nodes from xmlDoc to newXmlDoc
+      const clonedNode = modifiedParsedGPX.importNode(originalParsedGPX.documentElement, true);
+      // Append the cloned node to the newXmlDoc
+      modifiedParsedGPX.appendChild(clonedNode);
+      // Modify the pace to the user-defined value
+      const { totalTimeInSecond, totalDistanceInKm } = modifyPace(modifiedParsedGPX, minPace, maxPace, startTime);
+      // Drawing Canvas
+      if (updateCanvas == 1) {
+        const modifiedTrackPoints = modifiedParsedGPX.querySelectorAll('trkpt');
+        drawRoute(trkpts = modifiedTrackPoints, fitCanvas = 0);
       }
+      displayMessage(
+        "AvgPace:" + (totalTimeInSecond / 60 / totalDistanceInKm).toFixed(2) +
+        "_____Time:" + (totalTimeInSecond / 60).toFixed(1) + "Min  " +
+        " ____Distance:" + totalDistanceInKm.toFixed(1) + "km ",
+        "blue");
+
+      const endTime = new Date(startTime.getTime() + totalTimeInSecond * 1e3 + LocalTimeOffset);
+      const formattedDate = endTime.toISOString().slice(0, 16);
+      // Set the value of the input field
+      document.getElementById("endTimeInput").value = formattedDate;
+
+      //   };
+
+      //   reader.readAsText(file);
+      // }
 
     }
 
