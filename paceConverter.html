@@ -171,20 +171,22 @@
                     else if (attribute.value === "PaceInKm") {
                         const [minutes, seconds] = timeInputValue.split(":");
                         const paceInSeconds = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
-                        const elapsedTimeInMinute = paceInSeconds * distance / 3600;
-                        const elapsedTimeH = Math.floor(elapsedTimeInMinute);
-                        const elapsedTimeM = (elapsedTimeInMinute - elapsedTimeH) * 60;
+                        const elapsedTimeInHour = paceInSeconds * distance / 3600;
+                        const elapsedTimeH = Math.floor(elapsedTimeInHour);
+                        const elapsedTimeM = Math.floor((elapsedTimeInHour - elapsedTimeH) * 60);
+                        const elapsedTimeS =elapsedTimeInHour*3600 - elapsedTimeH*3600 -elapsedTimeM*60;
 
-                        attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}`;
+                        attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}:${String(Math.round(elapsedTimeS)).padStart(2, '0')}`;
                     }
                     else if (attribute.value === "PaceInMile") {
                         const [minutes, seconds] = timeInputValue.split(":");
                         const paceInSeconds = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
-                        const elapsedTimeInMinute = paceInSeconds * distance / 1.60934 / 3600;
-                        const elapsedTimeH = Math.floor(elapsedTimeInMinute);
-                        const elapsedTimeM = (elapsedTimeInMinute - elapsedTimeH) * 60;
+                        const elapsedTimeInHour = paceInSeconds * distance / 1.60934 / 3600;
+                        const elapsedTimeH = Math.floor(elapsedTimeInHour);
+                        const elapsedTimeM = (elapsedTimeInHour - elapsedTimeH) * 60;
+                        const elapsedTimeS =elapsedTimeInHour*3600 - elapsedTimeH*3600 -elapsedTimeM*60;
 
-                        attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}`;
+                        attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}:${String(Math.round(elapsedTimeS)).padStart(2, '0')}`;
                     }
 
                 } else {
