@@ -40,6 +40,25 @@
             ;
             /* Adjust the size as needed */
         }
+
+        /* Add some basic styling to the table */
+        table {
+            border-collapse: collapse;
+            margin: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+            min-width: 30px;
+        }
+
+        th {
+            font-weight: bold;
+            /* Make the header cells bold */
+        }
     </style>
 
     <link rel="icon" href="pace_icon.ico" type="image/x-icon">
@@ -72,7 +91,66 @@
         <label id="resultLabel">Pace:</label>
         <label id="attributeResult" style="font-weight: bolder;"></label>
     </div>
+    <!-- <table id="distancePaceTable" style="display: none;"> -->
+    <table id="distancePaceTable">
+        <thead>
+            <tr>
+                <th>Distance</th>
+                <th>Pace</th>
+                <th>CummulativePace</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="split1-label">KM 1-5</td>
+                <td id="split1-valueInKm"><!-- Add your pace data here for km 1-5 --></td>
+                <td id="split1-CummulativePace"><!-- Add your pace data here for km 1-5 --></td>
+            </tr>
+            <tr>
+                <td id="split2-label">KM 6-20</td>
+                <td id="split2-valueInKm"><!-- Add your pace data here for km 6-20 --></td>
+                <td id="split2-CummulativePace"><!-- Add your pace data here for km 6-20 --></td>
+            </tr>
+            <tr>
+                <td id="split3-label">KM 20-35</td>
+                <td id="split3-valueInKm"><!-- Add your pace data here for km 6-20 --></td>
+                <td id="split3-CummulativePace"><!-- Add your pace data here for km 6-20 --></td>
+            </tr>
+            <tr>
+                <td id="split4-label">Final 7 KM</td>
+                <td id="split4-valueInKm"><!-- Add your pace data here for km 6-20 --></td>
+                <td id="split4-CummulativePace"><!-- Add your pace data here for km 6-20 --></td>
+            </tr>
+            <!-- Add more rows as needed -->
+        </tbody>
+    </table>
+    <table id="Nutrition-table">
 
+        <tbody>
+          <tr>
+            <td>Gel(km)</td>
+            <td style="background-color: orchid;">8</td>
+            <td></td>
+            <td style="background-color: orchid;">18</td>
+            <td></td>
+            <td style="background-color: orchid;">27</td>
+            <td></td>
+            <td style="background-color: orchid;">35</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Salt(km)</td>
+            <td></td>
+            <td style="background-color: orangered;">12</td>
+            <td></td>
+            <td style="background-color: orangered;">22</td>
+            <td></td>
+            <td style="background-color: orangered;">29</td>
+            <td></td>
+            <td style="background-color: orangered;">37</td>
+          </tr>
+        </tbody>
+      </table>
 
     <!-- <div class="divider"></div>
     <button onclick="calculatePace()">Calculate</button> -->
@@ -116,21 +194,21 @@
             const selectedDistance = disVal;
             if (attribute == "ElapsedTime") {
                 if (selectedDistance === "42.195") {
-                    timeInput.value = "03:15";
+                    timeInput.value = "03:20";
                 } else if (selectedDistance === "21.097") {
-                    timeInput.value = "01:25";
+                    timeInput.value = "01:30";
 
                 } else if (selectedDistance === "10") {
                     timeInput.value = "00:40";
                 } else if (selectedDistance === "5") {
-                    timeInput.value = "00:18";
+                    timeInput.value = "00:20";
                 } else {
                     timeInput.value = "00:30";
                 }
             }
             else if (attribute == "PaceInKm") {
 
-                timeInput.value = "05:00";
+                timeInput.value = "04:40";
 
             }
             else if (attribute == "PaceInMile") {
@@ -174,7 +252,7 @@
                         const elapsedTimeInHour = paceInSeconds * distance / 3600;
                         const elapsedTimeH = Math.floor(elapsedTimeInHour);
                         const elapsedTimeM = Math.floor((elapsedTimeInHour - elapsedTimeH) * 60);
-                        const elapsedTimeS =elapsedTimeInHour*3600 - elapsedTimeH*3600 -elapsedTimeM*60;
+                        const elapsedTimeS = elapsedTimeInHour * 3600 - elapsedTimeH * 3600 - elapsedTimeM * 60;
 
                         attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}:${String(Math.round(elapsedTimeS)).padStart(2, '0')}`;
                     }
@@ -184,11 +262,23 @@
                         const elapsedTimeInHour = paceInSeconds * distance / 1.60934 / 3600;
                         const elapsedTimeH = Math.floor(elapsedTimeInHour);
                         const elapsedTimeM = (elapsedTimeInHour - elapsedTimeH) * 60;
-                        const elapsedTimeS =elapsedTimeInHour*3600 - elapsedTimeH*3600 -elapsedTimeM*60;
+                        const elapsedTimeS = elapsedTimeInHour * 3600 - elapsedTimeH * 3600 - elapsedTimeM * 60;
 
                         attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}:${String(Math.round(elapsedTimeS)).padStart(2, '0')}`;
                     }
-
+                    // Update Race Split Table
+                    let paceInKmSec = 0;
+                    if (attribute.value === "ElapsedTime") {
+                        paceInKmSec = timeInMinutes * 60 / distance;
+                    } else if (attribute.value === "PaceInKm") {
+                        const [minutes, seconds] = timeInputValue.split(":");
+                        paceInKmSec = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
+                    }
+                    else if (attribute.value === "PaceInMile") {
+                        const [minutes, seconds] = timeInputValue.split(":");
+                        paceInKmSec = (parseInt(minutes, 10) * 60 + parseInt(seconds, 10)) / 1.60934;
+                    }
+                    updateRaceSplitsTable(paceInKmSec, distance);
                 } else {
                     attributeResult.textContent = "Please enter valid distance and time.";
                 }
@@ -196,6 +286,52 @@
                 attributeResult.textContent = "Please enter elapsed time in hh:mm format.";
             }
         }
+        function convertSeconds2MinuteFormat(paceInKmSec) {
+            const paceMinFt = Math.floor(paceInKmSec / 60);
+            const paceSecFt = Math.floor(paceInKmSec - paceMinFt * 60);
+            return `${String(paceMinFt)}:${String(paceSecFt).padStart(2, '0')}`;
+        }
+        function updateRaceSplitsTable(paceInKmSec, totalKm) {
+            table = document.getElementById("distancePaceTable");
+            nutritionTable = document.getElementById("Nutrition-table");
+            const split1Element = document.getElementById("split1-valueInKm");
+            const split2Element = document.getElementById("split2-valueInKm");
+            const split3Element = document.getElementById("split3-valueInKm");
+            const split4Element = document.getElementById("split4-valueInKm");
+            const splitAcc1Element = document.getElementById("split1-CummulativePace");
+            const splitAcc2Element = document.getElementById("split2-CummulativePace");
+            const splitAcc3Element = document.getElementById("split3-CummulativePace");
+            const splitAcc4Element = document.getElementById("split4-CummulativePace");
+            if (totalKm > 42) {
+                table.style.display = "table";
+                nutritionTable.style.display = "table";
+                let totalTimeInSec1 = 0;
+                let totalTimeInSec2 = 0;
+                split1Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec + 4)} to ${convertSeconds2MinuteFormat(paceInKmSec + 7)}`;
+                totalTimeInSec1 += (paceInKmSec + 4) * 5;
+                totalTimeInSec2 += (paceInKmSec + 7) * 5;
+                splitAcc1Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2/5)}`;
+                split2Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec)} to ${convertSeconds2MinuteFormat(paceInKmSec + 3)}`;
+                totalTimeInSec1 += (paceInKmSec) * 15;
+                totalTimeInSec2 += (paceInKmSec + 3) * 15;
+                splitAcc2Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2/20)}`;
+                split3Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec - 5)} to ${convertSeconds2MinuteFormat(paceInKmSec)}`;
+                totalTimeInSec1 += (paceInKmSec - 4) * 15;
+                totalTimeInSec2 += (paceInKmSec) * 15;
+                splitAcc3Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2/35)}`;
+                const remainingTime1 = paceInKmSec * totalKm - totalTimeInSec1;
+                const remainingTime2 = paceInKmSec * totalKm - totalTimeInSec2;
+                split4Element.textContent = `${convertSeconds2MinuteFormat(remainingTime1 / (totalKm - 35))} to ${convertSeconds2MinuteFormat(remainingTime2 / (totalKm - 35))}`;
+                splitAcc4Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec )}`;
+            }
+            else {
+                table.style.display = "none";
+                nutritionTable.style.display = "none";
+            }
+        }
+
+
+
     </script>
 </body>
 
