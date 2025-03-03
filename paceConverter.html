@@ -55,6 +55,10 @@
             min-width: 30px;
         }
 
+        #basicInfo {
+            display: none;
+        }
+
         th {
             font-weight: bold;
             /* Make the header cells bold */
@@ -86,6 +90,7 @@
         <option value="PaceInMile">PaceInMile</option>
     </select>
     <input type="time" id="time" step="60" placeholder="Enter time in hh:mm format">
+    <label id="basicInfo"></label>
     <div style="padding: 4px;"></div>
     <div>
         <label id="resultLabel">Pace:</label>
@@ -127,164 +132,174 @@
     <table id="Nutrition-table">
 
         <tbody>
-          <tr>
-            <td>Gel(km)</td>
-            <td style="background-color: orchid;">8</td>
-            <td></td>
-            <td style="background-color: orchid;">18</td>
-            <td></td>
-            <td style="background-color: orchid;">27</td>
-            <td></td>
-            <td style="background-color: orchid;">35</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Salt(km)</td>
-            <td></td>
-            <td style="background-color: orangered;">12</td>
-            <td></td>
-            <td style="background-color: orangered;">22</td>
-            <td></td>
-            <td style="background-color: orangered;">29</td>
-            <td></td>
-            <td style="background-color: orangered;">37</td>
-          </tr>
+            <tr>
+                <td>Gel(km)</td>
+                <td style="background-color: orchid;">8</td>
+                <td></td>
+                <td style="background-color: orchid;">18</td>
+                <td></td>
+                <td style="background-color: orchid;">27</td>
+                <td></td>
+                <td style="background-color: orchid;">35</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Salt(km)</td>
+                <td></td>
+                <td style="background-color: orangered;">12</td>
+                <td></td>
+                <td style="background-color: orangered;">22</td>
+                <td></td>
+                <td style="background-color: orangered;">29</td>
+                <td></td>
+                <td style="background-color: orangered;">37</td>
+            </tr>
         </tbody>
-      </table>
+    </table>
 
     <!-- <div class="divider"></div>
     <button onclick="calculatePace()">Calculate</button> -->
 
     <script>
-        setDefaultElapsedTime(document.getElementById("distance").value);
-        calculatePace();
-        // Set default time for Full Marathon
-        const timeInput = document.getElementById('time');
+        let previousDistance = null; // Store previous distance
+        function updateBasicInfoInput(event) {
+            let changedElement = event.target.id; // Identify which input triggered the update
+            const distanceValue = document.getElementById("distance").value;
+            const timeInput = document.getElementById("time");
+            const attribute = document.getElementById("attribute").value;
+            const basicInfoLabel = document.getElementById("basicInfo");
 
-        // Add an event listener for the 'change' event
-        timeInput.addEventListener('change', function () {
-            // Call the calculatePace function when the value changes
-            calculatePace();
-        });
-        document.getElementById("distance").addEventListener("change", function () {
-            setDefaultElapsedTime(this.value);
-        });
-        document.getElementById("attribute").addEventListener("change", function () {
-            const resultLabel = document.getElementById("resultLabel");
-            const distance = document.getElementById("distance");
-            const selectedAttribute = this.value;
-            if (selectedAttribute == "ElapsedTime") {
-                resultLabel.textContent = "Pace:";
+            const distanceInMeters = (parseFloat(distanceValue) * 1000).toFixed(0); // Convert to meters
+            totalMinutes = 0; // Convert to total minutes
+            // If distance changes, adjust the time proportionally
+            if (changedElement === "distance" && previousDistance !== null && previousDistance !== 0) {
+                let [hours, minutes] = timeInput.value.split(":").map(Number);
+                let totalMinutes = hours * 60 + minutes;
+                let scaleFactor = distanceValue / previousDistance;
+                scaleFactor = Math.round(scaleFactor * 100) / 100; // Round to 1 decimal place
+                totalMinutes = Math.round(totalMinutes * scaleFactor);
+                let newHours = Math.floor(totalMinutes / 60);
+                let newMinutes = Math.round(totalMinutes % 60);
+
+                // Update the time input
+                timeInput.value = `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(2, "0")}`;
+                // Store the current distance for the next change
+                previousDistance = distanceValue;
+            }
+            if (changedElement === "attribute") {
+                const basicInfo = basicInfoLabel.textContent.trim();
+                const match = basicInfo.match(/([\d.]+[a-zA-Z]+):(\d+)min:(\w+)/);
+                let timeInMinutes = parseInt(match[2], 10); // e.g., 90
+                if (attribute == "ElapsedTime") {
+                    let hours = Math.floor(timeInMinutes / 60);
+                    let minutes = timeInMinutes % 60;
+                    document.getElementById("time").value = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+                } else {
+                    disInKM = document.getElementById("distance").value;
+                    paceInMinute = timeInMinutes / disInKM;
+
+                    let minutes = Math.floor(paceInMinute);
+                    let seconds = Math.round((paceInMinute - minutes) * 60);
+                    document.getElementById("time").value = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+                }
+            }
+
+            if (attribute == "ElapsedTime") {
+                const [hours, minutes] = timeInput.value.split(":").map(Number);
+                totalMinutes = hours * 60 + minutes; // Convert to total minutes
             }
             else {
-                resultLabel.textContent = "ElapsedTime:";
+                const [minutes, seconds] = timeInput.value.split(":").map(Number);
+                totalMinutes = Math.round((minutes + seconds / 60) * distanceInMeters / 1e3); // Convert to total minutes
             }
-            setDefaultElapsedTime(distance.value);
 
-        });
-        // Add event listener to the "time" input to calculate on Enter key press
+            let formattedInfo = `${distanceInMeters}m:${totalMinutes}min:${attribute}`;
+
+
+            basicInfoLabel.textContent = formattedInfo;
+            calculatePace();
+        }
+        function updateFromBasicInfo() {
+            const basicInfoElement = document.getElementById("basicInfo");
+            const basicInfo = basicInfoElement.textContent.trim();
+            const match = basicInfo.match(/([\d.]+[a-zA-Z]+):(\d+)min:(\w+)/);
+
+            if (!match) {
+                console.warn("Invalid format in basicInfo.");
+                return;
+            }
+
+            let distanceText = match[1]; // e.g., "10km"
+            let timeInMinutes = parseInt(match[2], 10); // e.g., 90
+
+            let distance = parseFloat(distanceText) / 1000; // Extract numeric value
+            let hours = Math.floor(timeInMinutes / 60);
+            let minutes = timeInMinutes % 60;
+
+            // Update the input fields
+            document.getElementById("distance").value = distance;
+            document.getElementById("attribute").value = match[3];
+            document.getElementById("time").value = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+        }
+        // Run once initially to store the first distance value
+
+        // Attach event listeners to update basicInfo when inputs change
+        document.getElementById("time").addEventListener("change", updateBasicInfoInput);
+        document.getElementById("distance").addEventListener("change", updateBasicInfoInput);
+        document.getElementById("attribute").addEventListener("change", updateBasicInfoInput);
+        setDefaultElapsedTime(document.getElementById("distance").value);
+        updateFromBasicInfo();
+        calculatePace();
         document.getElementById("time").addEventListener("keyup", function (event) {
             if (event.key === "Enter") {
-                calculatePace();
+                updateFromBasicInfo();
             }
         });
         function setDefaultElapsedTime(disVal) {
-            const timeInput = document.getElementById("time");
-            const attribute = document.getElementById("attribute").value;
-            const selectedDistance = disVal;
-            if (attribute == "ElapsedTime") {
-                if (selectedDistance === "42.195") {
-                    timeInput.value = "03:20";
-                } else if (selectedDistance === "21.097") {
-                    timeInput.value = "01:30";
-
-                } else if (selectedDistance === "10") {
-                    timeInput.value = "00:40";
-                } else if (selectedDistance === "5") {
-                    timeInput.value = "00:20";
-                } else {
-                    timeInput.value = "00:30";
-                }
-            }
-            else if (attribute == "PaceInKm") {
-
-                timeInput.value = "04:40";
-
-            }
-            else if (attribute == "PaceInMile") {
-
-                timeInput.value = "08:00";
-
-            }
-            calculatePace();
+            const attribute = "ElapsedTime"
+            const distanceInMeters = 42195
+            const totalMinutes = 200
+            document.getElementById("basicInfo").textContent = `${distanceInMeters}m:${totalMinutes}min:${attribute}`;
+            previousDistance = distanceInMeters / 1e3;
         }
-
+        // Modify calculatePace to read from basicInfo
         function calculatePace() {
-            const distanceSelect = document.getElementById("distance");
-            const timeInput = document.getElementById("time");
-            const attribute = document.getElementById("attribute");
+            const basicInfo = document.getElementById("basicInfo").textContent;
             const attributeResult = document.getElementById("attributeResult");
-
-            const distance = parseFloat(distanceSelect.value); // Convert to a number
-            const timeInputValue = timeInput.value;
-
-            // Validate and parse the time in "hh:mm" format
-            const timePattern = /^([01][0-9]|2[0-3]):[0-5][0-9]$/;
-            if (timePattern.test(timeInputValue)) {
-                const [hours, minutes] = timeInputValue.split(":");
-                const timeInMinutes = parseInt(hours, 10) * 60 + parseInt(minutes, 10);
-
-                if (!isNaN(distance) && !isNaN(timeInMinutes)) {
-                    if (attribute.value === "ElapsedTime") {
-                        const paceKm = timeInMinutes / distance;
-                        const paceMinKm = Math.floor(paceKm);
-                        const paceSecondKm = (paceKm - paceMinKm) * 60;
-                        const paceMl = timeInMinutes / (distance / 1.60934);
-                        const paceMinMl = Math.floor(paceMl);
-                        const paceSecondMl = (paceMl - paceMinMl) * 60;
-                        const paceSecondKmString = String(Math.round(paceSecondKm)).padStart(2, '0');
-                        const paceSecondMlString = String(Math.round(paceSecondMl)).padStart(2, '0');
-                        attributeResult.textContent = `${paceMinKm}:${paceSecondKmString}/km (${paceMinMl}:${paceSecondMlString}/Mile)`;
-                    }
-                    else if (attribute.value === "PaceInKm") {
-                        const [minutes, seconds] = timeInputValue.split(":");
-                        const paceInSeconds = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
-                        const elapsedTimeInHour = paceInSeconds * distance / 3600;
-                        const elapsedTimeH = Math.floor(elapsedTimeInHour);
-                        const elapsedTimeM = Math.floor((elapsedTimeInHour - elapsedTimeH) * 60);
-                        const elapsedTimeS = elapsedTimeInHour * 3600 - elapsedTimeH * 3600 - elapsedTimeM * 60;
-
-                        attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}:${String(Math.round(elapsedTimeS)).padStart(2, '0')}`;
-                    }
-                    else if (attribute.value === "PaceInMile") {
-                        const [minutes, seconds] = timeInputValue.split(":");
-                        const paceInSeconds = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
-                        const elapsedTimeInHour = paceInSeconds * distance / 1.60934 / 3600;
-                        const elapsedTimeH = Math.floor(elapsedTimeInHour);
-                        const elapsedTimeM = (elapsedTimeInHour - elapsedTimeH) * 60;
-                        const elapsedTimeS = elapsedTimeInHour * 3600 - elapsedTimeH * 3600 - elapsedTimeM * 60;
-
-                        attributeResult.textContent = `${elapsedTimeH}:${String(Math.round(elapsedTimeM)).padStart(2, '0')}:${String(Math.round(elapsedTimeS)).padStart(2, '0')}`;
-                    }
-                    // Update Race Split Table
-                    let paceInKmSec = 0;
-                    if (attribute.value === "ElapsedTime") {
-                        paceInKmSec = timeInMinutes * 60 / distance;
-                    } else if (attribute.value === "PaceInKm") {
-                        const [minutes, seconds] = timeInputValue.split(":");
-                        paceInKmSec = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
-                    }
-                    else if (attribute.value === "PaceInMile") {
-                        const [minutes, seconds] = timeInputValue.split(":");
-                        paceInKmSec = (parseInt(minutes, 10) * 60 + parseInt(seconds, 10)) / 1.60934;
-                    }
-                    updateRaceSplitsTable(paceInKmSec, distance);
-                } else {
-                    attributeResult.textContent = "Please enter valid distance and time.";
-                }
-            } else {
-                attributeResult.textContent = "Please enter elapsed time in hh:mm format.";
+            const match = basicInfo.match(/([\d.]+[a-zA-Z]+):(\d+)min:(\w+)/);
+            if (!match) {
+                attributeResult.textContent = "Invalid format in basicInfo.";
+                return;
             }
+            let distanceText = match[1];  // e.g., "10km"
+            let timeInMinutes = parseInt(match[2], 10);  // e.g., 90
+            let attribute = match[3]
+
+            // Convert distance to numerical value
+            let distance = parseFloat(distanceText);
+
+            let paceKm = timeInMinutes / (distance / 1e3);
+            let paceMinKm = Math.floor(paceKm);
+            let paceSecKm = Math.round((paceKm - paceMinKm) * 60);
+            let paceInSeconds = timeInMinutes * 60 / distance;
+            let totalTime = paceInSeconds * distance;
+            let elapsedHours = Math.floor(totalTime / 3600);
+            let elapsedMinutes = Math.floor((totalTime % 3600) / 60);
+            let elapsedSeconds = Math.round(totalTime % 60);
+            // Handle different pace calculations
+            if (attribute === "ElapsedTime") {
+                attributeResult.textContent = `${paceMinKm}:${String(paceSecKm).padStart(2, "0")}/km`;
+                document.getElementById("resultLabel").textContent = "Pace:"
+            } else if (attribute === "PaceInKm") {
+
+
+                // timeInput.value = `${String(paceMinKm).padStart(2, "0")}:${String(paceSecKm).padStart(2, "0")}`;
+                document.getElementById("resultLabel").textContent = "Time:"
+                attributeResult.textContent = `${elapsedHours}:${String(elapsedMinutes).padStart(2, "0")}:${String(elapsedSeconds).padStart(2, "0")}`;
+            }
+            disInKM = document.getElementById("distance").value;
+            paceInKmSec = Math.round(timeInMinutes * 60 / disInKM);
+            updateRaceSplitsTable(paceInKmSec, disInKM)
         }
         function convertSeconds2MinuteFormat(paceInKmSec) {
             const paceMinFt = Math.floor(paceInKmSec / 60);
@@ -310,19 +325,19 @@
                 split1Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec + 4)} to ${convertSeconds2MinuteFormat(paceInKmSec + 7)}`;
                 totalTimeInSec1 += (paceInKmSec + 4) * 5;
                 totalTimeInSec2 += (paceInKmSec + 7) * 5;
-                splitAcc1Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2/5)}`;
+                splitAcc1Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2 / 5)}`;
                 split2Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec)} to ${convertSeconds2MinuteFormat(paceInKmSec + 3)}`;
                 totalTimeInSec1 += (paceInKmSec) * 15;
                 totalTimeInSec2 += (paceInKmSec + 3) * 15;
-                splitAcc2Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2/20)}`;
+                splitAcc2Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2 / 20)}`;
                 split3Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec - 5)} to ${convertSeconds2MinuteFormat(paceInKmSec)}`;
                 totalTimeInSec1 += (paceInKmSec - 4) * 15;
                 totalTimeInSec2 += (paceInKmSec) * 15;
-                splitAcc3Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2/35)}`;
+                splitAcc3Element.textContent = `${convertSeconds2MinuteFormat((totalTimeInSec1 + totalTimeInSec2) / 2 / 35)}`;
                 const remainingTime1 = paceInKmSec * totalKm - totalTimeInSec1;
                 const remainingTime2 = paceInKmSec * totalKm - totalTimeInSec2;
                 split4Element.textContent = `${convertSeconds2MinuteFormat(remainingTime1 / (totalKm - 35))} to ${convertSeconds2MinuteFormat(remainingTime2 / (totalKm - 35))}`;
-                splitAcc4Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec )}`;
+                splitAcc4Element.textContent = `${convertSeconds2MinuteFormat(paceInKmSec)}`;
             }
             else {
                 table.style.display = "none";
