@@ -55,10 +55,15 @@
             min-width: 30px;
         }
 
- 
+
         th {
             font-weight: bold;
             /* Make the header cells bold */
+        }
+
+        #basicInfo {
+            display: none;
+            /*cntton*/
         }
     </style>
 
@@ -67,9 +72,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="pace_icon_180x180.png">
     <link rel="apple-touch-icon" sizes="152x152" href="pace_icon_152x152.png">
     <link rel="apple-touch-icon" sizes="120x120" href="pace_icon_120x120.png">
-    <!-- #basicInfo {
-        display: none; /*cntton*/
-    } -->
+
 
     <title>Pace Calculator</title>
 </head>
@@ -173,10 +176,10 @@
             const distanceInMeters = (parseFloat(distanceValue) * 1000).toFixed(0); // Convert to meters
             totalMinutes = 0; // Convert to total minutes
             // If distance changes, adjust the time proportionally
-            if (changedElement === "distance" && previousDistance !== null && previousDistance !== 0 && attribute == "ElapsedTime" ) {
+            if (changedElement === "distance" && previousDistance !== null && previousDistance !== 0 && attribute == "ElapsedTime") {
                 let [hours, minutes] = timeInput.value.split(":").map(Number);
                 let totalMinutes = hours * 60 + minutes;
-                        let scaleFactor = distanceValue / previousDistance;
+                let scaleFactor = distanceValue / previousDistance;
                 scaleFactor = Math.round(scaleFactor * 100) / 100; // Round to 1 decimal place
                 totalMinutes = Math.round(totalMinutes * scaleFactor);
 
@@ -196,16 +199,16 @@
                     let hours = Math.floor(timeInMinutes / 60);
                     let minutes = timeInMinutes % 60;
                     document.getElementById("time").value = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-                } 
+                }
                 else if (attribute == "PaceInMile") {
-                    disInMile = document.getElementById("distance").value/KM_TO_MILE;
+                    disInMile = document.getElementById("distance").value / KM_TO_MILE;
                     paceInMinute = timeInMinutes / disInMile;
 
                     let minutes = Math.floor(paceInMinute);
                     let seconds = Math.round((paceInMinute - minutes) * 60);
                     document.getElementById("time").value = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-            }
-                
+                }
+
                 else {
                     disInKM = document.getElementById("distance").value;
                     paceInMinute = timeInMinutes / disInKM;
@@ -222,7 +225,7 @@
             }
             else if (attribute == "PaceInMile") {
                 const [minutes, seconds] = timeInput.value.split(":").map(Number);
-                totalMinutes = Math.round((minutes + seconds / 60) * distanceInMeters / 1e3/KM_TO_MILE); // Convert to total minutes
+                totalMinutes = Math.round((minutes + seconds / 60) * distanceInMeters / 1e3 / KM_TO_MILE); // Convert to total minutes
             }
             else {
                 const [minutes, seconds] = timeInput.value.split(":").map(Number);
@@ -297,16 +300,17 @@
             let paceKm = timeInMinutes / (distance / 1e3);
             let paceMinKm = Math.floor(paceKm);
             let paceSecKm = Math.round((paceKm - paceMinKm) * 60);
-            let paceMinMl = Math.floor(paceKm*KM_TO_MILE);
-            let paceSecMl = Math.round((paceKm - paceMinKm)*KM_TO_MILE * 60);
+            let paceMinMl = Math.floor(paceKm * KM_TO_MILE);
+            let paceSecMl = Math.round((paceKm - paceMinKm) * KM_TO_MILE * 60);
             let paceInSeconds = timeInMinutes * 60 / distance;
             let totalTime = paceInSeconds * distance;
             let elapsedHours = Math.floor(totalTime / 3600);
             let elapsedMinutes = Math.floor((totalTime % 3600) / 60);
             let elapsedSeconds = Math.round(totalTime % 60);
+            const kmPerhour = (distance / 1e3) / (totalTime / 3600)
             // Handle different pace calculations
             if (attribute === "ElapsedTime") {
-                attributeResult.textContent = `${paceMinKm}:${String(paceSecKm).padStart(2, "0")}/km (${paceMinMl}:${String(paceSecMl).padStart(2, "0")}/mile)`;
+                attributeResult.textContent = `${paceMinKm}:${String(paceSecKm).padStart(2, "0")}/km (${paceMinMl}:${String(paceSecMl).padStart(2, "0")}/mile - ${kmPerhour.toFixed(2)}km/h)`;
                 document.getElementById("resultLabel").textContent = "Pace:"
             } else if (attribute === "PaceInKm") {
 
