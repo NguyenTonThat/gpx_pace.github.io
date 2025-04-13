@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="favicon.svg" />
-<link rel="shortcut icon" href="favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
-  <!-- Enable web app mode on iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Marathon Plan">
-  <!-- Favicon and Apple Touch Icon -->
-  <link rel="icon" type="image/png" href="favicon.ico" sizes="32x32">
-	
   <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="shortcut icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+    <!-- Enable web app mode on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Marathon Plan">
+    <!-- Favicon and Apple Touch Icon -->
+    <link rel="icon" type="image/png" href="favicon.ico" sizes="32x32">
+    
+    <meta charset="UTF-8" />
   <title>Sub-3 Marathon Plan</title>
   <style>
     body {
@@ -31,7 +33,8 @@
       text-align: center;
     }
 
-    .controls input, .controls button {
+    .controls input,
+    .controls button {
       padding: 8px;
       font-size: 14px;
       margin-right: 10px;
@@ -51,7 +54,8 @@
       width: 12.5%;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #aaa;
       vertical-align: top;
     }
@@ -86,7 +90,7 @@
       font-style: italic;
       color: #888;
       padding: 5px;
-	  
+
     }
 
     .date-label {
@@ -94,61 +98,93 @@
       color: #666;
       padding-left: 5px;
     }
-	<style>
-  .top-controls {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    z-index: 100;
-  }
 
-  .top-controls button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-  }
+    <style>.top-controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      z-index: 100;
+    }
 
-  .top-controls .reset-btn {
-    background-color: #d9534f;
-  }
+    .top-controls button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-  .top-controls input[type="date"] {
-    padding: 6px;
-    font-size: 14px;
-  }
+    .top-controls .reset-btn {
+      background-color: #d9534f;
+    }
 
-  .top-controls button:hover {
-    opacity: 0.9;
-  }
-  <style>
-  .total-cell {
-    background: #f8f9fa;
-    font-weight: bold;
-    text-align: center;
-  }
-  input.act-ok {
-  background-color: #d4edda; /* green */
-}
+    .top-controls input[type="date"] {
+      padding: 6px;
+      font-size: 14px;
+    }
 
-input.act-low {
-  background-color: #ffeeba; /* orange */
-}
-  
-</style>
-</style>
+    .top-controls button:hover {
+      opacity: 0.9;
+    }
+
+    <style>.total-cell {
+      background: #f8f9fa;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    input.act-ok {
+      background-color: #d4edda;
+      /* green */
+    }
+
+    input.act-low {
+      background-color: #ffeeba;
+      /* orange */
+    }
+
+    .today-cell {
+      background-color: #fffa90 !important;
+      /* border: 2px solid #f39c12; */
+    }
+
+    .interval {
+      background-color: #c7f1efd2;
+    }
+
+    .tempo {
+      background-color: #d4e8ed;
+    }
+
+    .recovery {
+      background-color: #cce5ff;
+    }
+
+    .longrun {
+      background-color: #e7cae3;
+    }
+
+    .race {
+      background-color: #f5c6cb;
+    }
+
+    .easy {
+      background-color: #e2e3e5;
+    }
+  </style>
+  </style>
   </style>
 </head>
+
 <body>
-<div class="top-controls">
-  <button onclick="resetPlan()" class="reset-btn">Reset Plan</button>
-</div>
+  <div class="top-controls">
+    <button onclick="resetPlan()" class="reset-btn">Reset Plan</button>
+  </div>
   <h1>Sub-3 Marathon Training Plan</h1>
 
   <div class="controls">
@@ -172,260 +208,395 @@ input.act-low {
         <th>Friday</th>
         <th>Saturday</th>
         <th>Sunday</th>
-		<th>Total Km</th> <!-- NEW COLUMN -->
+        <th>Total Km</th> <!-- NEW COLUMN -->
       </tr>
     </thead>
     <tbody id="plan-body"></tbody>
   </table>
 
-<script>
-const planDict = {
-  Week1: {
-    Monday: { Exp: 1.6, Act: "", Description: "800m interval @ pace 3:45 loop 2 times" },
-    Thursday: { Exp: 5, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy pace 5:38" },
-    Sunday: { Exp: 17.1, Act: "", Description: "Run easy pace 5:45 in 15.7km then run marathon pace @4:10 in 1.4km" }
-  },
-  Week2: {
-    Monday: { Exp: 2.4, Act: "", Description: "800m interval @ pace 3:45 loop 3 times" },
-    Thursday: { Exp: 6.4, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 18.8, Act: "", Description: "Run easy pace 5:45 in 15.7km then run marathon pace @4:10 in 3.1km" }
-  },
-  Week3: {
-    Monday: { Exp: 3.2, Act: "", Description: "800m interval @ pace 3:45 loop 4 times" },
-    Thursday: { Exp: 8, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 22.2, Act: "", Description: "Run easy pace 5:45 in 17.4km then run marathon pace @4:10 in 4.8km" }
-  },
-  Week4: {
-    Monday: { Exp: 4, Act: "", Description: "800m interval @ pace 3:45 loop 5 times" },
-    Thursday: { Exp: 9.6, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 23.6, Act: "", Description: "Run easy pace 5:45 in 17.4km then run marathon pace @4:10 in 6.2km" }
-  },
-  Week5: {
-    Monday: { Exp: 4.8, Act: "", Description: "800m interval @ pace 3:45 loop 6 times" },
-    Thursday: { Exp: 11.2, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 5, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 26.9, Act: "", Description: "Run easy pace 5:45 in 19km then run marathon pace @4:10 in 7.9km" }
-  },
-  Week6: {
-    Monday: { Exp: 5.6, Act: "", Description: "800m interval @ pace 3:45 loop 7 times" },
-    Thursday: { Exp: 12.8, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 28.7, Act: "", Description: "Run easy pace 5:45 in 19.1km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week7: {
-    Monday: { Exp: 6.4, Act: "", Description: "800m interval @ pace 3:45 loop 8 times" },
-    Thursday: { Exp: 14.4, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 30.5, Act: "", Description: "Run easy pace 5:45 in 20.9km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week8: {
-    Monday: { Exp: 7.2, Act: "", Description: "800m interval @ pace 3:45 loop 9 times" },
-    Thursday: { Exp: 16, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 5, Act: "", Description: "Sat 4.8km (27 mins) easy" },
-    Sunday: { Exp: 30.5, Act: "", Description: "Run easy pace 5:45 in 20.9km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week9: {
-    Monday: { Exp: 8, Act: "", Description: "800m interval @ pace 3:45 loop 10 times" },
-    Thursday: { Exp: 17.6, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 30.5, Act: "", Description: "Run easy pace 5:45 in 20.9km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week10: {
-    Monday: { Exp: 8, Act: "", Description: "800m interval @ pace 3:45 loop 10 times" },
-    Thursday: { Exp: 19.2, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "Sat 4.8km (27 mins) easy" },
-    Sunday: { Exp: 28.7, Act: "", Description: "Run easy pace 5:45 in 19.1km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week11: {
-    Monday: { Exp: 6.4, Act: "", Description: "800m interval @ pace 3:45 loop 8 times" },
-    Thursday: { Exp: 16, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 27, Act: "", Description: "Run easy pace 5:45 in 17.4km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week12: {
-    Monday: { Exp: 4.8, Act: "", Description: "800m interval @ pace 3:45 loop 6 times" },
-    Thursday: { Exp: 12.8, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 25.3, Act: "", Description: "Run easy pace 5:45 in 15.7km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week13: {
-    Monday: { Exp: 3.2, Act: "", Description: "800m interval @ pace 3:45 loop 4 times" },
-    Thursday: { Exp: 9.6, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 20, Act: "", Description: "Run easy pace 5:45 in 10.4km then run marathon pace @4:10 in 9.6km" }
-  },
-  Week14: {
-    Monday: { Exp: 1.6, Act: "", Description: "800m interval @ pace 3:45 loop 2 times" },
-    Thursday: { Exp: 6.4, Act: "", Description: "Pace 4:10" },
-    Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
-    Sunday: { Exp: 42, Act: "", Description: "Race FM" }
-  }
-};
+  <script>
+    const planDict = {
+      Week1: {
+        // Tuesday: { Exp: 1.6, Act: "", Description: "800m interval @ pace 3:45 loop 2 times" },
+        Tuesday: { typeRun: "interval",Loop: 2, Act: "", Description: "800m interval @ pace 3:45 loop 2 times" },
+        Thursday: { Exp: 5, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy pace 5:38" },
+        Sunday: { Exp: 17.1, Act: "", Description: "Run easy pace 5:45 in 15.7km then run marathon pace @4:10 in 1.4km" }
+      },
+      Week2: {
+        Tuesday: { Exp: 2.4, Act: "", Description: "800m interval @ pace 3:45 loop 3 times" },
+        Thursday: { Exp: 6.4, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 18.8, Act: "", Description: "Run easy pace 5:45 in 15.7km then run marathon pace @4:10 in 3.1km" }
+      },
+      Week3: {
+        Tuesday: { Exp: 3.2, Act: "", Description: "800m interval @ pace 3:45 loop 4 times" },
+        Thursday: { Exp: 8, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 22.2, Act: "", Description: "Run easy pace 5:45 in 17.4km then run marathon pace @4:10 in 4.8km" }
+      },
+      Week4: {
+        Tuesday: { Exp: 4, Act: "", Description: "800m interval @ pace 3:45 loop 5 times" },
+        Thursday: { Exp: 9.6, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 23.6, Act: "", Description: "Run easy pace 5:45 in 17.4km then run marathon pace @4:10 in 6.2km" }
+      },
+      Week5: {
+        Tuesday: { Exp: 4.8, Act: "", Description: "800m interval @ pace 3:45 loop 6 times" },
+        Thursday: { Exp: 11.2, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 5, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 26.9, Act: "", Description: "Run easy pace 5:45 in 19km then run marathon pace @4:10 in 7.9km" }
+      },
+      Week6: {
+        Tuesday: { Exp: 5.6, Act: "", Description: "800m interval @ pace 3:45 loop 7 times" },
+        Thursday: { Exp: 12.8, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 28.7, Act: "", Description: "Run easy pace 5:45 in 19.1km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week7: {
+        Tuesday: { Exp: 6.4, Act: "", Description: "800m interval @ pace 3:45 loop 8 times" },
+        Thursday: { Exp: 14.4, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 30.5, Act: "", Description: "Run easy pace 5:45 in 20.9km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week8: {
+        Tuesday: { Exp: 7.2, Act: "", Description: "800m interval @ pace 3:45 loop 9 times" },
+        Thursday: { Exp: 16, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 5, Act: "", Description: "Sat 4.8km (27 mins) easy" },
+        Sunday: { Exp: 30.5, Act: "", Description: "Run easy pace 5:45 in 20.9km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week9: {
+        Tuesday: { Exp: 8, Act: "", Description: "800m interval @ pace 3:45 loop 10 times" },
+        Thursday: { Exp: 17.6, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 30.5, Act: "", Description: "Run easy pace 5:45 in 20.9km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week10: {
+        Tuesday: { Exp: 8, Act: "", Description: "800m interval @ pace 3:45 loop 10 times" },
+        Thursday: { Exp: 19.2, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "Sat 4.8km (27 mins) easy" },
+        Sunday: { Exp: 28.7, Act: "", Description: "Run easy pace 5:45 in 19.1km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week11: {
+        Tuesday: { Exp: 6.4, Act: "", Description: "800m interval @ pace 3:45 loop 8 times" },
+        Thursday: { Exp: 16, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 27, Act: "", Description: "Run easy pace 5:45 in 17.4km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week12: {
+        Tuesday: { Exp: 4.8, Act: "", Description: "800m interval @ pace 3:45 loop 6 times" },
+        Thursday: { Exp: 12.8, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 25.3, Act: "", Description: "Run easy pace 5:45 in 15.7km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week13: {
+        Tuesday: { Exp: 3.2, Act: "", Description: "800m interval @ pace 3:45 loop 4 times" },
+        Thursday: { Exp: 9.6, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 20, Act: "", Description: "Run easy pace 5:45 in 10.4km then run marathon pace @4:10 in 9.6km" }
+      },
+      Week14: {
+        Tuesday: {  Exp: 1.6, Act: "", Description: "800m interval @ pace 3:45 loop 2 times" },
+        Thursday: { Exp: 6.4, Act: "", Description: "Pace 4:10" },
+        Saturday: { Exp: 4.8, Act: "", Description: "6.4km (36 mins) easy or parkrun" },
+        Sunday: { Exp: 42, Act: "", Description: "Race FM" }
+      }
+    };
 
 
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const defaultTypeByDay = {
+      2: 'interval',  // Tuesday
+      4: 'tempo',     // Thursday
+      6: 'recovery',  // Saturday
+      0: 'longrun',   // Sunday
+    };
+    // Get run type for a given date
+    function getRunTypeForDate(dateStr, planDict) {
+      if (planDict) {
+        const entry = planDict;
+        const loopCount = entry.Loop || 1;
+        const repeatDistance = entry.repeatDistance || 0.8;
+        // entry.Loop = loopCount;
+        entry.repeatDistance = repeatDistance;
+        if ((entry.Loop !== undefined && entry.Loop !== null)) {
+          entry.Exp = parseFloat((loopCount * repeatDistance).toFixed(1));
+        }
+        else{
+          entry.Loop  = parseFloat((entry.Exp / entry.repeatDistance).toFixed(0));
+        }
+        
+      }
+      if (planDict != null) {
+        if (planDict['typeRun'] != null) {
+          return planDict['typeRun'];
+        }
+      }
+      const dateObj = new Date(dateStr);
+      const day = dateObj.getDay(); // 0 = Sunday ... 6 = Saturday
+      return defaultTypeByDay[day] || '';
+    }
+    function generatePlan(fromSaved = false) {
+      const input = document.getElementById("start-date");
+      const planBody = document.getElementById("plan-body");
 
-function generatePlan(fromSaved = false) {
-  const input = document.getElementById("start-date");
-  const planBody = document.getElementById("plan-body");
+      let startDateStr = input.value;
 
-  let startDateStr = input.value;
-
-  if (fromSaved && !startDateStr) {
-    startDateStr = localStorage.getItem("startDate");
-    if (startDateStr) input.value = startDateStr;
-  }
-
-  if (!startDateStr) {
-    alert("Please select a start date.");
-    return;
-  }
-
-  localStorage.setItem("startDate", startDateStr);
-
-  const baseDate = new Date(startDateStr);
-  planBody.innerHTML = "";
-
-  let weekOffset = 0;
-
-  for (const [week, weekData] of Object.entries(planDict)) {
-    const row = document.createElement("tr");
-    const weekCell = document.createElement("td");
-    weekCell.textContent = week;
-    row.appendChild(weekCell);
-
-    let totalExp = 0;
-    let totalAct = 0;
-
-    for (let i = 0; i < 7; i++) {
-      const cell = document.createElement("td");
-      const currentDate = new Date(baseDate);
-      currentDate.setDate(baseDate.getDate() + i + weekOffset * 7);
-      const dayName = daysOfWeek[i];
-      const entry = weekData[dayName];
-
-      const dateKey = `${week}-${dayName}`;
-      const dateStr = `${currentDate.getMonth() + 1}/${currentDate.getDate()}/${currentDate.getFullYear()}`;
-
-      if (entry) {
-        const savedAct = localStorage.getItem(`act-${dateKey}`) || entry.Act;
-        const expVal = entry.Exp || 0;
-        const actVal = parseFloat(savedAct);
-
-        totalExp += expVal;
-        if (!isNaN(actVal)) totalAct += actVal;
-
-        const actClass = !isNaN(actVal)
-          ? actVal >= expVal ? "act-ok" : "act-low"
-          : "";
-
-        cell.innerHTML = `
-          <div class="date-label">${dateStr}</div>
-          <table class="inner-table">
-            <tr><td><strong>Exp</strong></td><td>${expVal}</td></tr>
-            <tr>
-              <td><strong>Act</strong></td>
-              <td>
-                <input type="text" value="${savedAct}" 
-                       data-key="act-${dateKey}" 
-                       onchange="saveActInput(this)" 
-                       placeholder="e.g. 9.8"
-                       class="${actClass}"
-                       style="width: 100%; box-sizing: border-box; padding: 2px;" />
-              </td>
-            </tr>
-          </table>
-          <div class="description">${entry.Description}</div>
-        `;
-      } else {
-        cell.innerHTML = `
-          <div class="date-label">${dateStr}</div>
-          <div class="rest-day">Rest</div>
-        `;
+      if (fromSaved && !startDateStr) {
+        startDateStr = localStorage.getItem("startDate");
+        if (startDateStr) input.value = startDateStr;
       }
 
-      row.appendChild(cell);
-    }
+      if (!startDateStr) {
+        alert("Please select a start date.");
+        return;
+      }
 
-    const totalCell = document.createElement("td");
-    totalCell.className = "total-cell";
-    totalCell.innerHTML = `
+      localStorage.setItem("startDate", startDateStr);
+
+      const baseDate = new Date(startDateStr);
+      planBody.innerHTML = "";
+
+      let weekOffset = 0;
+
+      for (const [week, weekData] of Object.entries(planDict)) {
+        const row = document.createElement("tr");
+        const weekCell = document.createElement("td");
+        weekCell.textContent = week;
+        row.appendChild(weekCell);
+
+        let totalExp = 0;
+        let totalAct = 0;
+
+        for (let i = 0; i < 7; i++) {
+          const cell = document.createElement("td");
+          const currentDate = new Date(baseDate);
+          currentDate.setDate(baseDate.getDate() + i + weekOffset * 7);
+          const dayName = daysOfWeek[i];
+          const entry = weekData[dayName];
+
+          const dateKey = `${week}-${dayName}`;
+          const dateStr = `${currentDate.getMonth() + 1}/${currentDate.getDate()}/${currentDate.getFullYear()}`;
+          const type = getRunTypeForDate(dateStr, planDict[week][dayName]);
+          const today = new Date();
+          const todayFormatted = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`; // M/D/YYYY
+          let backgroundColorClass = ""; // Initialize empty class
+
+          // Apply background color based on run type
+          if (dateStr === todayFormatted) {
+            backgroundColorClass = "today-cell";
+          }
+          else if (type === "interval") {
+            backgroundColorClass = "interval";
+          } else if (type === "tempo") {
+            backgroundColorClass = "tempo";
+          } else if (type === "recovery") {
+            backgroundColorClass = "recovery";
+          } else if (type === "longrun") {
+            backgroundColorClass = "longrun";
+          } else if (type === "race") {
+            backgroundColorClass = "race";
+          } else if (type === "easy") {
+            backgroundColorClass = "easy";
+          }
+
+          if (entry) {
+            const savedAct = localStorage.getItem(`act-${dateKey}`) || entry.Act;
+            const expVal = entry.Exp || 0;
+            const actVal = parseFloat(savedAct);
+
+            totalExp += expVal;
+            if (!isNaN(actVal)) totalAct += actVal;
+
+            const actClass = !isNaN(actVal)
+              ? actVal >= expVal ? "act-ok" : "act-low"
+              : "";
+
+            // Handle "interval" type to add ActLoop and ExpLoop
+            let additionalColumns = "";
+            if (type === "interval") {
+              const savedLoopCount = localStorage.getItem(`loopCount-${dateKey}`) || '';
+              const expLoop = entry.Loop;  
+              // repeatDistance
+
+              additionalColumns = `
+    <tr>
+      <td><strong>ExpLoop</strong></td><td>${expLoop}</td>
+        <td><strong>Exp</strong></td><td>${expVal}</td>
+      </tr>
+      <tr>
+        <td><strong>ActLoop</strong></td>   
+         <td>
+      <input type="text" value="${savedLoopCount}" 
+             data-key="loopCount-${dateKey}" 
+             onchange="saveActInput(this)" 
+             class="${actClass} ${backgroundColorClass}"
+             placeholder="e.g. 4"
+             style="width: 100%; box-sizing: border-box; padding: 2px;" />
+    </td>
+        <td><strong>Act</strong></td><td>
+          <input type="text" value="${savedAct}" 
+                 data-key="act-${dateKey}" 
+                 onchange="saveActInput(this)" 
+                 placeholder="e.g. 9.8"
+                 class="${actClass} ${backgroundColorClass}"
+                 style="width: 100%; box-sizing: border-box; padding: 2px;" />
+        </td>
+
+      </tr>
+
+    `;
+            }
+            else {
+              additionalColumns = `
+    <tr>
+        <td><strong>Exp</strong></td><td>${expVal}</td>
+      </tr>
+      <tr>
+        <td><strong>Act</strong></td><td>
+          <input type="text" value="${savedAct}" 
+                 data-key="act-${dateKey}" 
+                 onchange="saveActInput(this)" 
+                 placeholder="e.g. 9.8"
+                 class="${actClass} ${backgroundColorClass}"
+                 style="width: 100%; box-sizing: border-box; padding: 2px;" />
+        </td>
+     
+      </tr>
+
+    `;
+            }
+
+            cell.innerHTML = `
+    <div class="date-label ${backgroundColorClass}">${dateStr} </div>
+    <table class="inner-table ${backgroundColorClass}">
+      ${additionalColumns}  <!-- Add Act and ActLoop, Exp and ExpLoop in same row for interval -->
+    </table>
+    <div class="description ${backgroundColorClass}">${entry.Description}</div>
+  `;
+          } else {
+            cell.innerHTML = `
+    <div class="date-label">${dateStr}</div>
+    <div class="rest-day">Rest</div>
+  `;
+          }
+
+          row.appendChild(cell);
+        }
+
+        const totalCell = document.createElement("td");
+        totalCell.className = "total-cell";
+        totalCell.innerHTML = `
       <div><strong>Exp:</strong> ${totalExp.toFixed(1)}</div>
       <div><strong>Act:</strong> <span id="total-${week}">${totalAct.toFixed(1)}</span></div>
     `;
-    row.appendChild(totalCell);
+        row.appendChild(totalCell);
 
-    planBody.appendChild(row);
-    weekOffset++;
-  }
-}
+        planBody.appendChild(row);
+        weekOffset++;
+      }
+
+    }
 
 function saveActInput(inputElem) {
   const key = inputElem.getAttribute("data-key");
-  const val = inputElem.value;
+  const val = parseFloat(inputElem.value);
+  if (isNaN(val)) return;
+
   localStorage.setItem(key, val);
 
-  // Extract week and day from the key
-  const [, week, day] = key.match(/act-(Week\d+)-(\w+)/);
+  const match = key.match(/(act|loopCount)-(Week\d+)-(\w+)/);
+  if (!match) return;
 
-  const exp = planDict[week][day]?.Exp;
-  const act = parseFloat(val);
+  const [_, typeChanged, week, day] = match;
 
-  inputElem.classList.remove("act-ok", "act-low");
+  const actInput = document.querySelector(`[data-key="act-${week}-${day}"]`);
+  const loopInput = document.querySelector(`[data-key="loopCount-${week}-${day}"]`);
 
-  if (!isNaN(act)) {
-    if (act >= exp) {
-      inputElem.classList.add("act-ok");
-    } else {
-      inputElem.classList.add("act-low");
-    }
+  const repeatDistance = planDict[week]?.[day]?.repeatDistance;
+  const exp = planDict[week]?.[day]?.Exp;
+  const loopVal = parseFloat(loopInput?.value || 0);
+
+  if (typeChanged === "loopCount" && actInput  && val > 0) {
+    const newAct = +(val * repeatDistance).toFixed(2);
+    actInput.value = newAct;
+    localStorage.setItem(`act-${week}-${day}`, newAct);
   }
 
-  // Optional: update weekly total
-  updateWeeklyTotal(week);
-}
-
-  function updateWeekTotal(week) {
-    let total = 0;
-    for (let day of daysOfWeek) {
-      const key = `act-${week}-${day}`;
-      const value = parseFloat(localStorage.getItem(key));
-      if (!isNaN(value)) total += value;
-    }
-
-    const totalSpan = document.getElementById(`total-${week}`);
-    if (totalSpan) totalSpan.textContent = total.toFixed(1);
+  if (typeChanged === "act" && loopInput ) {
+    const newLoop = +(val / repeatDistance).toFixed(1);
+    loopInput.value = newLoop;
+    localStorage.setItem(`loopCount-${week}-${day}`, newLoop);
   }
 
-  function resetPlan() {
-    const confirmed = confirm("Are you sure you want to reset the entire plan?");
-    if (!confirmed) return;
-
-    localStorage.removeItem("startDate");
-
-    for (let key in localStorage) {
-      if (key.startsWith("act-")) {
-        localStorage.removeItem(key);
+  // Update act input highlighting
+  const actVal = parseFloat(actInput?.value);
+  if (actInput) {
+    actInput.classList.remove("act-ok", "act-low");
+    if (!isNaN(actVal)) {
+      if (actVal >= exp) {
+        actInput.classList.add("act-ok");
+        if(loopInput !== undefined &&  loopInput!== null) loopInput.classList.add("act-ok");
+      } else {
+        actInput.classList.add("act-low");
+        if(loopInput !== undefined && loopInput !== null)  loopInput.classList.add("act-low");
       }
     }
-
-    document.getElementById("start-date").value = "";
-    document.getElementById("plan-body").innerHTML = "";
   }
 
-  // Auto-generate if startDate exists
-  window.addEventListener("DOMContentLoaded", () => {
-    const savedDate = localStorage.getItem("startDate");
-    if (savedDate) {
-      document.getElementById("start-date").value = savedDate;
-      generatePlan(true);
+  updateWeekTotal(week);
+}
+
+    function updateWeekTotal(week) {
+      let total = 0;
+      for (let day of daysOfWeek) {
+        const key = `act-${week}-${day}`;
+        const value = parseFloat(localStorage.getItem(key));
+        if (!isNaN(value)) total += value;
+      }
+
+      const totalSpan = document.getElementById(`total-${week}`);
+      if (totalSpan) totalSpan.textContent = total.toFixed(1);
     }
-  });
-</script>
+
+    function resetPlan() {
+  const confirmed = confirm("Are you sure you want to reset the entire plan?");
+  if (!confirmed) return;
+
+  // Remove all localStorage keys related to the plan
+  const keysToRemove = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (
+      key.startsWith("act-") ||
+      key.startsWith("loopCount-") ||
+      key.startsWith("distanceRepeat-") ||
+      key === "startDate"
+    ) {
+      keysToRemove.push(key);
+    }
+  }
+
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+
+  // Reset UI
+  document.getElementById("start-date").value = "";
+  document.getElementById("plan-body").innerHTML = "";
+}
+
+
+    // Auto-generate if startDate exists
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedDate = localStorage.getItem("startDate");
+      if (savedDate) {
+        document.getElementById("start-date").value = savedDate;
+        generatePlan(true);
+      }
+    });
+
+
+  </script>
 
 </body>
+
 </html>
